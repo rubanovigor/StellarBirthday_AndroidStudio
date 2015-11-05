@@ -1,6 +1,8 @@
 package com.aiworker.stellarbirthday;
 
 import java.io.File;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -11,13 +13,16 @@ import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.Signature;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.FileProvider;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,7 +37,7 @@ import android.view.View.OnClickListener;
 
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
-import com.aiworker.stellarbirthday.R;
+
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -67,8 +72,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         loginButton = (LoginButton)findViewById(R.id.login_button);
-        //loginButton.setReadPermissions(Arrays.asList("public_profile, email, user_birthday"));
-        loginButton.setReadPermissions(Arrays.asList("user_birthday"));
+        loginButton.setReadPermissions(Arrays.asList("public_profile, email, user_birthday"));
+//        loginButton.setReadPermissions(Arrays.asList("user_birthday"));
 
 //		RelativeLayout layout =(RelativeLayout)findViewById(R.id.background);
 //		layout.setBackgroundResource(R.drawable.skymap3);
@@ -81,7 +86,22 @@ public class MainActivity extends Activity {
         tvBirthdayStarName.setVisibility(View.VISIBLE);
         tvBirthdayStarInfo.setVisibility(View.VISIBLE);
 
-        Stellar.iniStarsArray();
+//        Stellar.iniStarsArray();
+
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(
+                    "com.aiworker.stellarbirthday",
+                    PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+
+        } catch (NoSuchAlgorithmException e) {
+
+        }
 
         /** register the custom callback */
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
@@ -100,36 +120,37 @@ public class MainActivity extends Activity {
                                 //System.out.println("Check: " + response.toString());
                                 try
                                 {
-                                    //String id = object.getString("id");
-                                    //String name = object.getString("name");
-                                    //String email = object.getString("email");
-                                    //String gender = object.getString("gender");
+                                    String id = object.getString("id");
+                                    String name = object.getString("name");
+                                    String email = object.getString("email");
+                                    String gender = object.getString("gender");
                                     String birthday = object.getString("birthday");
-                                   // System.out.println(id + ", " + name + ", " + email + ", " + gender + ", " + birthday);
+                                    System.out.println("IR: " + id + ", " + name + ", " + email + ", " + gender + ", " + birthday);
                                     info.setText(birthday);
                                 }
                                 catch (JSONException e)
                                 {
                                     e.printStackTrace();
+                                    System.out.println("IR: Error");
                                 }
 
                             }
                         });
                 Bundle parameters = new Bundle();
-                //parameters.putString("fields", "id,name,email,gender, birthday");
-                parameters.putString("fields", "birthday");
+                parameters.putString("fields", "public_profile, email, user_birthday");
+//                parameters.putString("fields", "birthday");
                 request.setParameters(parameters);
                 request.executeAsync();
             }
 
             @Override
             public void onCancel() {
-                info.setText("Login attempt canceled.");
+                info.setText("Login attempt canceled."); System.out.println("IR: onCancel");
             }
 
             @Override
             public void onError(FacebookException e) {
-                info.setText("Login attempt failed.");
+                info.setText("Login attempt failed."); System.out.println("IR: onError");
             }
 
         });
@@ -163,19 +184,19 @@ public class MainActivity extends Activity {
                             catch (JSONException e)
                             {
                                 e.printStackTrace();
-                                info.setText("fuck FB");
+                                info.setText("xxxx FB");
                             }
                         }
                     });
             Bundle parameters = new Bundle();
-            //parameters.putString("fields", "id,name,email,gender, birthday");
-            parameters.putString("fields", "birthday");
+            parameters.putString("fields", "public_profile, email, user_birthday");
+//            parameters.putString("fields", "birthday");
             request.setParameters(parameters);
             request.executeAsync();
 
         }
 
-
+        Stellar.iniStarsArray();
 
         // --DatePicker listener
         Calendar today = Calendar.getInstance();

@@ -20,7 +20,7 @@
         android:layout_marginLeft="5dp"
         android:layout_toLeftOf="@+id/login_button"
         android:layout_alignParentLeft="true"
-        android:text=""
+        android:text="info"
         android:textColor="#FFFFFF"
         android:textSize="10sp"
         android:textAppearance="?android:attr/textAppearanceMedium"
