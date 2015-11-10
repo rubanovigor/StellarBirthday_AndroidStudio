@@ -3,6 +3,7 @@ package com.aiworker.stellarbirthday;
 import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Date;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -17,6 +18,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.Signature;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -48,6 +51,11 @@ import com.facebook.GraphResponse;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.facebook.login.widget.ProfilePictureView;
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.model.SharePhoto;
+import com.facebook.share.model.SharePhotoContent;
+import com.facebook.share.widget.ShareDialog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,6 +69,9 @@ public class MainActivity extends Activity {
     public static long days=0;
     private LoginButton loginButton;
     private CallbackManager callbackManager;
+    ProfilePictureView profilePicture;
+    Button btn_facebookShare;
+    ShareDialog shareDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,8 +79,15 @@ public class MainActivity extends Activity {
         FacebookSdk.sdkInitialize(getApplicationContext());
         callbackManager = CallbackManager.Factory.create();
 
+        /** You need this method to be used only once to configure
+         your key hash in your App Console at developers.facebook.com/apps */
+//        getFbKeyHash("com.aiworker.stellarbirthday");
+
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+
+        btn_facebookShare = (Button) findViewById(R.id.btn_facebookShare);
+        profilePicture = (ProfilePictureView)findViewById(R.id.profile_picture);
 
         loginButton = (LoginButton)findViewById(R.id.login_button);
         loginButton.setReadPermissions(Arrays.asList("public_profile, email, user_birthday"));
@@ -87,21 +105,8 @@ public class MainActivity extends Activity {
         tvBirthdayStarInfo.setVisibility(View.VISIBLE);
 
 //        Stellar.iniStarsArray();
+        shareDialog = new ShareDialog(this);
 
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(
-                    "com.aiworker.stellarbirthday",
-                    PackageManager.GET_SIGNATURES);
-            for (Signature signature : info.signatures) {
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-
-        } catch (NoSuchAlgorithmException e) {
-
-        }
 
         /** register the custom callback */
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
@@ -125,20 +130,20 @@ public class MainActivity extends Activity {
                                     String email = object.getString("email");
                                     String gender = object.getString("gender");
                                     String birthday = object.getString("birthday");
-                                    System.out.println("IR: " + id + ", " + name + ", " + email + ", " + gender + ", " + birthday);
-                                    info.setText(birthday);
+                                    System.out.println(id + ", " + name + ", " + email + ", " + gender + ", " + birthday);
+//                                    tv_facebookInfo.setText(birthday);
+//                                    tv_facebookInfo.setText("ID: " + id + " | " + email + "\n" + name + ", " + " | " + gender + " | " + birthday);
+                                    profilePicture.setProfileId(object.getString("id"));
                                 }
                                 catch (JSONException e)
                                 {
                                     e.printStackTrace();
-                                    System.out.println("IR: Error");
                                 }
 
                             }
                         });
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "public_profile, email, user_birthday");
-//                parameters.putString("fields", "birthday");
+                parameters.putString("fields", "id, name, email, gender, birthday, picture");
                 request.setParameters(parameters);
                 request.executeAsync();
             }
@@ -155,14 +160,8 @@ public class MainActivity extends Activity {
 
         });
 
-        /** check if user already login, get profile info if yes */
-        //boolean loggedIn=false;
+        /** check if user already login, get and display profile info if yes */
         if(AccessToken.getCurrentAccessToken()!=null){
-            //  loggedIn=true;
-            // Profile actualProfile = Profile.getCurrentProfile();
-            //String name = actualProfile.getName();
-            //info.setText(name);
-
             GraphRequest request = GraphRequest.newMeRequest(
                     AccessToken.getCurrentAccessToken(),
                     new GraphRequest.GraphJSONObjectCallback() {
@@ -173,39 +172,59 @@ public class MainActivity extends Activity {
                             // Application code
                             try
                             {
-                               // String id = object.getString("id");
-                               // String name = object.getString("name");
-                               // String email = object.getString("email");
-                               // String gender = object.getString("gender");
+                                String id = object.getString("id");
+                                String name = object.getString("name");
+                                String email = object.getString("email");
+                                String gender = object.getString("gender");
                                 String birthday = object.getString("birthday");
-                               // System.out.println(id + ", " + name + ", " + email + ", " + gender + ", " + birthday);
+                                System.out.println(id + ", " + name + ", " + email + ", " + gender + ", " + birthday);
+
+
                                 info.setText(birthday);
+
+//                                tv_facebookInfo.setText("ID: " + id + " | " + email + "\n" + name + ", " + " | " + gender + " | " + birthday);
+                                profilePicture.setProfileId(object.getString("id"));
                             }
                             catch (JSONException e)
                             {
                                 e.printStackTrace();
-                                info.setText("xxxx FB");
+//                                tv_facebookInfo.setText("exception...");
                             }
                         }
                     });
             Bundle parameters = new Bundle();
-            parameters.putString("fields", "public_profile, email, user_birthday");
-//            parameters.putString("fields", "birthday");
+            parameters.putString("fields", "id,name,email,gender, birthday, picture");
             request.setParameters(parameters);
             request.executeAsync();
 
+        } else {
+//            profilePicture.setProfileId(null);
+//            tv_facebookInfo.setText("please login");
         }
+
+        /** display sharing dialog */
+        btn_facebookShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sharePhotoToFacebook();
+//                shareLinkToFacebook();
+
+            }
+        });
+
 
         Stellar.iniStarsArray();
 
         // --DatePicker listener
         Calendar today = Calendar.getInstance();
-        birthdayDatePicker.init(today.get(Calendar.YEAR),today.get(Calendar.MONTH),today.get(Calendar.DAY_OF_MONTH), new OnDateChangedListener(){
+        birthdayDatePicker.init(today.get(Calendar.YEAR),today.get(Calendar.MONTH),today.get(Calendar.DAY_OF_MONTH),
+                new OnDateChangedListener(){
                     @Override
                     public void onDateChanged(DatePicker view,
                                               int year, int monthOfYear,int dayOfMonth) {
                         // -- get difference in days
                         Calendar thatDay = Calendar.getInstance();
+
                         thatDay.set(Calendar.DAY_OF_MONTH,dayOfMonth);
                         thatDay.set(Calendar.MONTH,monthOfYear); // 0-11 so 1 less
                         thatDay.set(Calendar.YEAR, year);
@@ -258,6 +277,30 @@ public class MainActivity extends Activity {
         );
 
 
+    }
+
+    private void sharePhotoToFacebook(){
+        Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.logo260);
+//        BitmapFactory.decodeResource("/sdcard/logo.jpg");
+
+        SharePhoto photo = new SharePhoto.Builder()
+                .setBitmap(image)
+                .build();
+        SharePhotoContent content = new SharePhotoContent.Builder()
+                .addPhoto(photo)
+                .build();
+        shareDialog.show(content);
+    }
+
+    private void shareLinkToFacebook(){
+        ShareLinkContent content = new ShareLinkContent.Builder()
+                .setContentUrl(Uri.parse("https://youtu.be/8XWXJDgbeP0"))
+                .setContentTitle("The Singularity Is Near Movie Trailer")
+                .setContentDescription("The Singularity is Near, A True Story about the Future, based on Ray Kurzweil’s New York Times bestseller")
+                .setImageUrl(Uri.parse("https://qph.is.quoracdn.net/main-thumb-t-1310-200-ykjopcfaccptqyydeyfbovmprpavvzoa.jpeg"))
+                .build();
+
+        shareDialog.show(content);
     }
 
 
@@ -321,7 +364,7 @@ public class MainActivity extends Activity {
         Uri uri = Uri.parse("android.resource://com.aiworker.stellarbirthday/drawable/vega1.jpg");
         try {
             fileUri = FileProvider.getUriForFile(MainActivity.this,
-                    "com.aiworker.stellarbirthday.fileprovider",  requestFile);
+                    "com.aiworker.stellarbirthday.fileprovider", requestFile);
         } catch (IllegalArgumentException e) {
             Log.e("File Selector", "The selected file can't be shared: ");
         }
@@ -359,23 +402,43 @@ public class MainActivity extends Activity {
 //		startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.chooser_title)));
     }
 
+    public void getFbKeyHash(String packageName) {
+
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(
+                    packageName,
+                    PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("YourKeyHash :", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+//                System.out.println("YourKeyHash: "+ Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+
+        } catch (NoSuchAlgorithmException e) {
+
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
 //        Log.v(TAG, "inside onResume");
         tvBirthdayStarName.setVisibility(View.VISIBLE);
         tvBirthdayStarInfo.setVisibility(View.VISIBLE);
-
-        // Logs 'install' and 'app activate' App Events.
-        AppEventsLogger.activateApp(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
-        // Logs 'app deactivate' App Event.
-        AppEventsLogger.deactivateApp(this);
     }
 }
 
