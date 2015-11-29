@@ -7,11 +7,12 @@
     <application
         android:allowBackup="true"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme" >
         <activity
             android:name="com.aiworker.stellarbirthday.MainActivity"
             android:label="@string/app_name"
-            android:theme="@android:style/Theme.NoTitleBar"
+            android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="portrait"  >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,7 +22,7 @@
 
         <activity
             android:name="com.aiworker.stellarbirthday.StellarInfo"
-            android:theme="@android:style/Theme.Translucent"
+            android:theme="@style/AppTheme"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:background="@android:color/transparent"

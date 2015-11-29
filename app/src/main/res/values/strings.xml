@@ -3,4 +3,8 @@
     <string name="action_settings">Settings</string>
     <string name="chooser_title">share your stellar birthday</string>
     <string name="facebook_app_id">1523365611288600</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
 </resources>

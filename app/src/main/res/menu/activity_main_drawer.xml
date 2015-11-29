@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/nav_camara" android:icon="@android:drawable/ic_menu_camera"
+            android:title="See Telescope view of the Star" />
+        <item android:id="@+id/nav_gallery" android:icon="@drawable/icon_googleskymap"
+            android:title="Find Star in Google Sky" />
+        <item android:id="@+id/nav_slideshow" android:icon="@android:drawable/ic_menu_slideshow"
+            android:title="About star" />
+        <item android:id="@+id/nav_manage" android:icon="@android:drawable/ic_menu_manage"
+            android:title="Tools...." />
+    </group>
+
+    <item android:title="Communicate">
+        <menu>
+            <item android:id="@+id/nav_share" android:icon="@android:drawable/ic_menu_share"
+                android:title="Share" />
+            <item android:id="@+id/nav_send" android:icon="@android:drawable/ic_menu_send"
+                android:title="Send...." />
+        </menu>
+    </item>
+
+</menu>

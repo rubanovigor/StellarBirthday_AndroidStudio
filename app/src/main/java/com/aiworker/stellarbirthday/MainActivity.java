@@ -24,7 +24,14 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.v4.content.FileProvider;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
@@ -61,7 +68,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
     Uri fileUri;
     private DatePicker birthdayDatePicker;
     private TextView info, tvBirthdayStarName, tvBirthdayStarInfo;
@@ -70,7 +78,6 @@ public class MainActivity extends Activity {
     private LoginButton loginButton;
     private CallbackManager callbackManager;
     ProfilePictureView profilePicture;
-    Button btn_facebookShare;
     ShareDialog shareDialog;
 
     @Override
@@ -84,9 +91,31 @@ public class MainActivity extends Activity {
 //        getFbKeyHash("com.aiworker.stellarbirthday");
 
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        /** declare layout and corresponding elements */
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        btn_facebookShare = (Button) findViewById(R.id.btn_facebookShare);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                sharePhotoToFacebook();
+//                shareLinkToFacebook();
+            }
+        });
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
         profilePicture = (ProfilePictureView)findViewById(R.id.profile_picture);
 
         loginButton = (LoginButton)findViewById(R.id.login_button);
@@ -201,17 +230,6 @@ public class MainActivity extends Activity {
 //            profilePicture.setProfileId(null);
 //            tv_facebookInfo.setText("please login");
         }
-
-        /** display sharing dialog */
-        btn_facebookShare.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                sharePhotoToFacebook();
-//                shareLinkToFacebook();
-
-            }
-        });
-
 
         Stellar.iniStarsArray();
 
@@ -439,6 +457,55 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_camara) {
+            Intent intent = new Intent(this, StellarInfo.class);
+            startActivity(intent);
+
+        } else if (id == R.id.nav_gallery) {
+            Intent i = new Intent(Intent.ACTION_SEARCH);
+            i.setPackage("com.google.android.stardroid");
+            i.putExtra(SearchManager.QUERY, BirthdayStarName);
+
+            // Verify it resolves
+            PackageManager packageManager = getPackageManager();
+            List<ResolveInfo> activities = packageManager.queryIntentActivities(i, 0);
+            boolean isIntentSafe = activities.size() > 0;
+
+            // Start an activity if it's safe
+            if (isIntentSafe) {
+                startActivity(i);
+            }
+            else {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("market://search?q=sky map&c=apps"));
+                startActivity(intent);
+            }
+
+
+        } else if (id == R.id.nav_slideshow) {
+            Intent intent = new Intent(this, AboutStars.class);
+            startActivity(intent);
+
+        } else if (id == R.id.nav_manage) {
+
+        } else if (id == R.id.nav_share) {
+            sharePhotoToFacebook();
+//                shareLinkToFacebook();
+        } else if (id == R.id.nav_send) {
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 }
 
