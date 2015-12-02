@@ -3,10 +3,13 @@ package com.aiworker.stellarbirthday;
 import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Date;
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
@@ -40,6 +43,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -79,6 +83,8 @@ public class MainActivity extends AppCompatActivity
     private CallbackManager callbackManager;
     ProfilePictureView profilePicture;
     ShareDialog shareDialog;
+    RelativeLayout layout;
+    ImageButton ib_appLogo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +121,9 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        layout =(RelativeLayout)findViewById(R.id.bg);
+        ib_appLogo = (ImageButton)findViewById(R.id.app_logo);
 
         profilePicture = (ProfilePictureView)findViewById(R.id.profile_picture);
 
@@ -163,6 +172,14 @@ public class MainActivity extends AppCompatActivity
 //                                    tv_facebookInfo.setText(birthday);
 //                                    tv_facebookInfo.setText("ID: " + id + " | " + email + "\n" + name + ", " + " | " + gender + " | " + birthday);
                                     profilePicture.setProfileId(object.getString("id"));
+
+                                    int dayOfMonth = Integer.parseInt(birthday.subSequence(3, 5).toString());
+                                    int monthOfYear = Integer.parseInt(birthday.subSequence(0, 2).toString());
+                                    int year = Integer.parseInt(birthday.subSequence(6, 10).toString());
+                                    get_star_name(year, monthOfYear, dayOfMonth);
+                                    info.setText(String.valueOf(dayOfMonth) + "/" + String.valueOf(monthOfYear) + "/" + String.valueOf(year));
+                                    loginButton.setVisibility(View.GONE);
+
                                 }
                                 catch (JSONException e)
                                 {
@@ -208,11 +225,16 @@ public class MainActivity extends AppCompatActivity
                                 String birthday = object.getString("birthday");
                                 System.out.println(id + ", " + name + ", " + email + ", " + gender + ", " + birthday);
 
-
-                                info.setText(birthday);
+                                int dayOfMonth = Integer.parseInt(birthday.subSequence(3, 5).toString());
+                                int monthOfYear = Integer.parseInt(birthday.subSequence(0, 2).toString());
+                                int year = Integer.parseInt(birthday.subSequence(6, 10).toString());
+                                get_star_name(year, monthOfYear, dayOfMonth);
+                                info.setText(String.valueOf(dayOfMonth) + "/" + String.valueOf(monthOfYear) + "/" + String.valueOf(year));
+                                loginButton.setVisibility(View.GONE);
 
 //                                tv_facebookInfo.setText("ID: " + id + " | " + email + "\n" + name + ", " + " | " + gender + " | " + birthday);
                                 profilePicture.setProfileId(object.getString("id"));
+
                             }
                             catch (JSONException e)
                             {
@@ -234,8 +256,8 @@ public class MainActivity extends AppCompatActivity
         Stellar.iniStarsArray();
 
         // --DatePicker listener
-        Calendar today = Calendar.getInstance();
-        birthdayDatePicker.init(today.get(Calendar.YEAR),today.get(Calendar.MONTH),today.get(Calendar.DAY_OF_MONTH),
+       /*Calendar today = Calendar.getInstance();
+       birthdayDatePicker.init(today.get(Calendar.YEAR),today.get(Calendar.MONTH),today.get(Calendar.DAY_OF_MONTH),
                 new OnDateChangedListener(){
                     @Override
                     public void onDateChanged(DatePicker view,
@@ -293,6 +315,21 @@ public class MainActivity extends AppCompatActivity
                 }
 
         );
+        */
+
+        String str = info.getText().toString();
+        String MY_FORMAT = "dd MMM yyyy HH:mm:ss";
+        String TIMEZONE_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssz";
+        Date date = new Date();
+        try {
+            date = new SimpleDateFormat(MY_FORMAT, Locale.US).parse(str);
+//            info.setText(date.toString());
+            String timezoneString = new SimpleDateFormat(MY_FORMAT, Locale.US).format(date);
+        } catch (ParseException e) {
+            System.out.println("printing date Exception ==> "+e.toString());
+            e.printStackTrace();
+
+        }
 
 
     }
@@ -494,18 +531,77 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, AboutStars.class);
             startActivity(intent);
 
-        } else if (id == R.id.nav_manage) {
-
         } else if (id == R.id.nav_share) {
             sharePhotoToFacebook();
 //                shareLinkToFacebook();
         } else if (id == R.id.nav_send) {
-
+            loginButton.setVisibility(View.VISIBLE);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+//    private String convertDate(String date) {
+//        try {
+//            SimpleDateFormat format = new SimpleDateFormat("dd MMM yyyy hh:mm:ss");
+//            Date d = format.parse(date);
+//            SimpleDateFormat serverFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+//            return serverFormat.format(d);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return "";
+//    }
+
+    private void get_star_name(int year, int monthOfYear,int dayOfMonth){
+        // -- get difference in days
+        Calendar thatDay = Calendar.getInstance();
+
+        thatDay.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        thatDay.set(Calendar.MONTH,monthOfYear); // 0-11 so 1 less
+        thatDay.set(Calendar.YEAR, year);
+
+        Calendar today = Calendar.getInstance();
+        long diff = today.getTimeInMillis() - thatDay.getTimeInMillis(); //result in millis
+
+        days = diff / (24 * 60 * 60 * 1000);
+//		                  info.setText(String.valueOf(days)+"  ld");
+
+        BirthdayStarName = Stellar.getStellarBirthdayStarName(days);
+
+
+        if(Stellar.DaysToStellarBirthday == 0){
+            tvBirthdayStarName.setText("Stellar Birthday '" + BirthdayStarName+"' is " + "today" );
+            tvBirthdayStarInfo.setText(Stellar.StarInfo[Stellar.index]);
+        }
+        if(Stellar.DaysToStellarBirthday == 1){
+            tvBirthdayStarName.setText("Stellar Birthday '" + BirthdayStarName+"' in " +
+                    String.valueOf(Math.round(Stellar.DaysToStellarBirthday)) + " day");
+            tvBirthdayStarInfo.setText(Stellar.StarInfo[Stellar.index]);
+        }
+        if(Stellar.DaysToStellarBirthday > 1){
+            tvBirthdayStarName.setText("Stellar Birthday '" + BirthdayStarName+"' in " +
+                    String.valueOf(Math.round(Stellar.DaysToStellarBirthday)) + " days");
+            tvBirthdayStarInfo.setText(Stellar.StarInfo[Stellar.index]);
+        }
+
+        if(Stellar.DaysToStellarBirthday < 0){
+            tvBirthdayStarName.setText("please select earliest birthday date");
+        }
+        if(days<=0){
+            tvBirthdayStarName.setText("you have not born yet");
+        }
+        if(days==0){
+            tvBirthdayStarName.setText(BirthdayStarName);
+            tvBirthdayStarInfo.setText(Stellar.StarInfo[Stellar.index]);
+        }
+
+        // -- adjust background image
+        layout.setBackgroundResource(R.drawable.bg1);
+        ib_appLogo.setVisibility(View.INVISIBLE);
+    }
+
 }
 

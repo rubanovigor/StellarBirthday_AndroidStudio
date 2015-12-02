@@ -2,22 +2,20 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
-        <item android:id="@+id/nav_camara" android:icon="@android:drawable/ic_menu_camera"
+        <item android:id="@+id/nav_camara" android:icon="@drawable/astronomy"
             android:title="See Telescope view of the Star" />
-        <item android:id="@+id/nav_gallery" android:icon="@drawable/icon_googleskymap"
+        <item android:id="@+id/nav_gallery" android:icon="@drawable/gsky2"
             android:title="Find Star in Google Sky" />
-        <item android:id="@+id/nav_slideshow" android:icon="@android:drawable/ic_menu_slideshow"
+        <item android:id="@+id/nav_slideshow" android:icon="@drawable/info"
             android:title="About star" />
-        <item android:id="@+id/nav_manage" android:icon="@android:drawable/ic_menu_manage"
-            android:title="Tools...." />
     </group>
 
     <item android:title="Communicate">
         <menu>
-            <item android:id="@+id/nav_share" android:icon="@android:drawable/ic_menu_share"
+            <item android:id="@+id/nav_share" android:icon="@drawable/share_tb"
                 android:title="Share" />
-            <item android:id="@+id/nav_send" android:icon="@android:drawable/ic_menu_send"
-                android:title="Send...." />
+            <item android:id="@+id/nav_send" android:icon="@drawable/fb"
+                android:title="Login/Logout" />
         </menu>
     </item>
 
